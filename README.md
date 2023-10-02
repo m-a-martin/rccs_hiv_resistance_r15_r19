@@ -3,16 +3,16 @@ This repository contains the data and code needed to replicate the analyses in t
 
 The analysis is all run in the R programming language with the following packages: 
 
-tidyverse v.2.0.0
-cowplot v.1.1.1
-geepack v.1.3.9
-ggpattern v.1.0.1
-ggplo2 v.3.4.3
-ggrepel v.0.9.3
-haven v.2.5.3
-mtest v.0.9.40
-Readxl v.1.4.3
-sandwich v.3.0.2.
+-tidyverse v.2.0.0
+-cowplot v.1.1.1
+-geepack v.1.3.9
+-ggpattern v.1.0.1
+-ggplo2 v.3.4.3
+-ggrepel v.0.9.3
+-haven v.2.5.3
+-mtest v.0.9.40
+-Readxl v.1.4.3
+-sandwich v.3.0.2.
 
 A couple of notes: 
 1. For privacy reasons, we do not share individual level community data. As such, the data needed to replicate Figure 3A and B and Table S28 have not been shared, although the code is shared here. Requests to use these data can be directed to Dr. M. Kate Grabowski at mgrabow2@jhmi.edu
