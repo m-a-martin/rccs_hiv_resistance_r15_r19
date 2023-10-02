@@ -1,0 +1,26 @@
+generic name	abbreviation	class
+doravirine	DOR	nnrti
+efavirenz	EFV	nnrti
+Etravirine	ETR	nnrti
+nevirapine	NVP	nnrti
+rilpivirine	RPV	nnrti
+abacavir	ABC	nrti
+zidovudine	AZT	nrti
+stavudine	D4T	nrti
+didanosine	DDI	nrti
+emtricitabine	FTC	nrti
+lamivudine	3TC	nrti
+tenofovir	TDF	nrti
+atazanavir	ATV	pi
+darunavir	DRV	pi
+fosamprenavir	FPV	pi
+indinavir	IDV	pi
+loprinavir	LPV	pi
+nelfinavir	NFV	pi
+saquinavir	SQV	pi
+tipranavir	TPV	pi
+bictegravir	BIC	insti
+dolutegravir	DTG	insti
+elvitegravir	EVG	insti
+raltegravir	RAL	insti
+cabotegravir 	CAB	insti

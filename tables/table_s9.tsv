@@ -1,0 +1,9 @@
+data	corr	params	Quasi Lik_nnrti	QIC_nnrti	CIC_nnrti	Quasi Lik_nrti	QIC_nrti	CIC_nrti	Quasi Lik_pi	QIC_pi	CIC_pi
+viremic pre-treatment PLHIV	independence	5	-660.979	1344.565	11.304	-244.683	510.772	10.703	-280.846	582.07	10.189
+viremic pre-treatment PLHIV	exchangeable	5	-661.098	1341.888	9.846	-244.742	510.785	10.65	-280.93	581.708	9.924
+viremic pre-treatment PLHIV	ar1	5	-661.066	1341.753	9.811	-244.758	511.079	10.782	-280.906	580.967	9.578
+viremic pre-treatment PLHIV	unstructured	5	-661.177	1342.27	9.958	-244.796	511.775	11.091	-280.901	580.575	9.387
+viremic treatment-experienced PLHIV	independence	2	-292.229	589.548	2.545	-260.297	525.872	2.639	-41.588	88.141	2.482
+viremic treatment-experienced PLHIV	exchangeable	2	-293.07	589.201	1.53	-260.943	526.88	2.497	-41.587	88.108	2.467
+viremic PLHIV	independence	2	-723.392	1451.46	2.338	-512.421	1029.641	2.399	-135.047	274.911	2.408
+viremic PLHIV	exchangeable	2	-724.675	1453.185	1.917	-513.354	1032.279	2.786	-135.06	274.231	2.055

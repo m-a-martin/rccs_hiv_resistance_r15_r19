@@ -1,0 +1,7 @@
+class	round	independence_coefficient	independence_std.err	exchangeable_coefficient	exchangeable_std.err
+nnrti	(Intercept)	-1.858	0.079	-1.767	0.068
+nnrti	round18	0.288	0.105	0.079	0.083
+nrti	(Intercept)	-2.286	0.103	-2.396	0.132
+nrti	round18	0.153	0.141	0.25	0.147
+pi	(Intercept)	-4.107	0.268	-4.078	0.249
+pi	round18	0.242	0.371	0.221	0.313
