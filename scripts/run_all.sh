@@ -156,6 +156,7 @@ Rscript scripts/table_s29.R
 Rscript scripts/table_s30.R
 Rscript scripts/table_s31.R
 Rscript scripts/table_s32.R
+Rscript scripts/table_s32.R
 
 # copy over figures and tables with individual level community data
 cp ../tables/table_s28.tsv ./tables/table_s28.tsv

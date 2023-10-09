@@ -1,63 +1,47 @@
 library(tidyverse)
 source('scripts/utils.R')
 
+
 sort_cols = function(x){
-		class_order = c("independence" = 1, "exchangeable" = 2, "ar1" = 3, "unstructured" = 4)
-		type_order = c("Prev. % (95% CI)" = 1, "Prev. ratio (95% CI)" = 2, "p-value" = 3, "spacer" = 4)
-		non_round_x = x[x!= "round"]
-		s1 = class_order[str_split(non_round_x, "_", simplify=T)[,1]]
-		s2 = type_order[str_split(non_round_x, "_", simplify=T)[,2]]
-		scores = tibble(val = non_round_x, s1 = s1, s2 = s2) %>%
+		type_order = c("Prev. (95% CI)" = 1, "Prev. ratio (95% CI)" = 2, "p-value" = 3, "spacer" = 4)
+		non_mut_x = x[x!= "mut"]
+		s1 = as.numeric(str_split(non_mut_x, "_", simplify=T)[,1])
+		s2 = type_order[str_split(non_mut_x, "_", simplify=T)[,2]]
+		scores = tibble(val = non_mut_x, s1 = s1, s2 = s2) %>%
 			arrange(s1, s2)
-		return(c("round", scores$val))
+		return(c("mut", scores$val))
 }
 
-pred_file = 'models/pretreat_int97a_amongPLWHIV_gee_prev_pred.tsv'
-rr_file = 'models/pretreat_int97a_amongPLWHIV_gee_rr.tsv'
 
-pred = read_tsv(pred_file)
-# format for table
-pred = pred %>%
+# risk ratio of 15 most frequent mutations in pretreated data compared to R15
+treat_dr_muts_prev_file = 'models/treat_dr_muts_amongPLWHIV_prev_pred.tsv'
+treat_dr_muts_prev = read_tsv(treat_dr_muts_prev_file)
+
+
+plot_muts = (treat_dr_muts_prev %>% filter(round == 18) %>% arrange(-fit) %>%
+	slice(1:15) %>% select(mut) %>% mutate(idx = seq(1,n())))
+
+treat_dr_muts_prev = treat_dr_muts_prev %>% filter(mut %in% plot_muts$mut) %>%
 	select(-se.fit) %>%
-	mutate(across(fit:upr, ~format_digit(.x*100))) %>%
+	mutate_at(vars(fit, lwr, upr), ~round(.x*100, 2)) %>%
 	unite("val", fit:lwr, sep=' (') %>%
 	unite("val", val:upr, sep=', ') %>%
 	mutate(
-		val = paste(val, ')', sep=''), 
-		type = paste(c, "Prev. % (95% CI)", sep='_')) %>%
-		select(-c)
-
-rr = read_tsv(rr_file) %>%
-	mutate(across(RR:UCI, ~format_digit(.x))) %>%
-	unite("val", RR:LCI, sep=' (') %>%
-	unite("val", val: UCI, sep=', ') %>%
-	mutate(
 		val = paste(val, ')', sep=''),
-		val = if_else(`var` == "(Intercept)", 'ref', val),
-		P = if_else(P < 1E-4, "<0.0001", as.character(signif(P, 2))),
-		P = if_else(`var` == "(Intercept)", 'ref', P),
-		`var` = as.numeric(str_split(`var`, 'round', simplify=T)[,2]),
-		`var` = if_else(is.na(`var`), 
-			min(`var`, na.rm=TRUE)-1,
-			`var`),
-		type = paste(c, "Prev. ratio (95% CI)", sep='_')) %>%
-	rename(c("round"='var')) %>%
-	select(-c)
+		round = paste(round, "_Prev. (95% CI)", sep='')) %>%
+	pivot_wider(names_from=round, values_from=val)
 
-	rr = 
-		bind_rows(
-			rr %>% select(-P),
-			rr %>% select(-val) %>% rename(c("val" = "P")) %>%
-				mutate(type = paste(str_split(type, "_", simplify=T)[,1], "p-value", sep='_')))
 
-	t = bind_rows(pred, rr)
-	t = t %>% pivot_wider(names_from=type, values_from=val)
-	# add blank columns
-	for (c in unique(read_tsv(pred_file)$c)){
-		t[paste(c, 'spacer', sep='_')] = NA
-	}
-	# sort
-	t = t %>% select(sort_cols(colnames(t))) %>%
-		arrange(round)
+t = treat_dr_muts_prev %>% 
+	# sort rows
+	left_join(plot_muts, by="mut") %>%
+	arrange(idx) %>%
+	select(-idx)
 
-write_tsv(t, 'tables/table_s31.tsv')
+for (r in unique(read_tsv(treat_dr_muts_prev_file)$round)){
+	t[paste(r, "_spacer", sep='')] = NA
+}
+
+t = t %>% select(sort_cols(colnames(t)))
+write_tsv(t, 'tables/table_s31.tsv', na='')
+
