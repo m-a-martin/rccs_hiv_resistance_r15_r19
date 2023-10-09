@@ -24,7 +24,7 @@ pretreat_dat = hiv_dr_cat %>%
 	mutate(round = as.character(round)) %>%
 	filter(
 		viremic & pre_treatment & finalhiv == "P" & 
-		valid_dr_dat)
+		!is.na(nnrti) & !is.na(nrti) & !is.na(pi) & !is.na(insti))
 
 # sampling weights
 pretreat_weights = read_tsv(w_file)
@@ -33,8 +33,8 @@ pretreat_dat = pretreat_dat %>%
 	left_join(
 		pretreat_weights %>% 
 			mutate(round = as.character(round)) %>%
-			select(study_id, round, w_gen), by=c("study_id", "round")) %>%
-	rename(w = w_gen)
+			select(study_id, round, w_all), by=c("study_id", "round")) %>%
+	rename(w = w_all)
 
 
 all_rr = list()

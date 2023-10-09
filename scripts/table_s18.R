@@ -3,8 +3,6 @@ source('scripts/utils.R')
 
 
 
-
-
 dat_file = 'data/rakai_drug_resistance_categorized.tsv'
 table_vars = c("age_cat", "comm_type", "sex", "vl_cat")
 

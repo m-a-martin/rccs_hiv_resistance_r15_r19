@@ -17,7 +17,7 @@ d = hiv_dr_cat %>%
 	filter(round == 18 & finalhiv == 'P' & viremic) %>%
 	left_join(w, by = c('study_id', 'round')) %>%
 	mutate(
-		all = finalhiv == 'P' & viremic & (!is.na(nnrti) & !is.na(nrti) & !is.na(pi)),
+		all = finalhiv == 'P' & viremic & (!is.na(nnrti) & !is.na(nrti) & !is.na(pi) & !is.na(insti)),
 		outcome_cat = case_when(
 			is.na(finalhiv) ~ 'none',
 			finalhiv == 'N' ~ 'none',

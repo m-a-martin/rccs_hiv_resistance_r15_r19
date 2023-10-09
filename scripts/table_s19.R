@@ -38,7 +38,7 @@ v_par[['round']] = hiv_dr_cat %>%
 		group_by(v) %>%
 		summarise(
 			n_viremic_participants = n(), 
-			n_viremic_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti)), 
+			n_viremic_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti) & !is.na(insti)), 
 			.group='drop') %>%
 		mutate(var = 'Survey round') %>%
 		select(var, v, n_viremic_participants, n_viremic_sequenced)
@@ -50,7 +50,7 @@ for (i_var in table_vars){
 		group_by(v) %>%
 		summarise(
 			n_viremic_participants=n(), 
-			n_viremic_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti)), 
+			n_viremic_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti) & !is.na(insti)),
 			.groups='drop') %>%
 		mutate('var' = str_to_sentence(var_rename[i_var])) %>%
 		select(var, v, n_viremic_participants, n_viremic_sequenced)
@@ -66,7 +66,7 @@ p_par[['round']] = hiv_dr_cat %>%
 		group_by(v) %>%
 		summarise(
 			n_pretreat_participants = n(), 
-			n_pretreat_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti)), 
+			n_pretreat_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti) & !is.na(insti)),
 			.group='drop') %>%
 		mutate(var = 'Survey round') %>%
 		select(var, v, n_pretreat_participants, n_pretreat_sequenced)
@@ -76,7 +76,7 @@ for (i_var in table_vars){
 		rename(v = !!i_var) %>%
 		group_by(v) %>%
 		summarise(n_pretreat_participants=n(), 
-			n_pretreat_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti)), 
+			n_pretreat_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti) & !is.na(insti)),
 			.groups='drop') %>%
 		mutate('var' = str_to_sentence(var_rename[i_var])) %>%
 		select(var, v, n_pretreat_participants, n_pretreat_sequenced)
@@ -93,7 +93,7 @@ t_par[['round']] = hiv_dr_cat %>%
 		group_by(v) %>%
 		summarise(
 			n_treat_participants = n(), 
-			n_treat_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti)), 
+			n_treat_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti) & !is.na(insti)),
 			.group='drop') %>%
 		mutate(var = 'Survey round') %>%
 		select(var, v, n_treat_participants, n_treat_sequenced)
@@ -105,7 +105,7 @@ for (i_var in table_vars){
 		rename(v = !!i_var) %>%
 		group_by(v) %>%
 		summarise(n_treat_participants=n(), 
-			n_treat_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti)), 
+			n_treat_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti) & !is.na(insti)),
 			.groups='drop') %>%
 		mutate('var' = str_to_sentence(var_rename[i_var])) %>%
 		select(var, v, n_treat_participants, n_treat_sequenced)
@@ -123,14 +123,15 @@ table = v_par %>%
 oa = hiv_dr_cat %>% 
 	summarize(
 		n_viremic_participants = sum(viremic & (!is.na(finalhiv) & finalhiv == 'P')),
-		n_viremic_sequenced = sum(viremic & (!is.na(finalhiv) & finalhiv == 'P') & (!is.na(pi) & !is.na(nrti) & !is.na(nnrti))),
+		n_viremic_sequenced = sum(viremic & (!is.na(finalhiv) & finalhiv == 'P') & 
+			(!is.na(insti) & !is.na(pi) & !is.na(nrti) & !is.na(nnrti))),
 		n_pretreat_participants = sum(pre_treatment & viremic & (!is.na(finalhiv) & finalhiv == 'P')),
-		n_pretreat_sequenced = sum(pre_treatment & viremic & (!is.na(finalhiv) & finalhiv == 'P') & (!is.na(pi) & !is.na(nrti) & !is.na(nnrti))),
+		n_pretreat_sequenced = sum(pre_treatment & viremic & (!is.na(finalhiv) & finalhiv == 'P') & 
+			(!is.na(insti) & !is.na(pi) & !is.na(nrti) & !is.na(nnrti))),
 		n_treat_participants = sum(!pre_treatment & viremic & (!is.na(finalhiv) & finalhiv == 'P')),
 		n_treat_sequenced = sum(!pre_treatment & viremic & (!is.na(finalhiv) & finalhiv == 'P')  & 
-			!is.na(pi) & !is.na(nrti) & !is.na(nnrti))) %>%
+			!is.na(insti) & !is.na(pi) & !is.na(nrti) & !is.na(nnrti))) %>%
 	mutate(var = 'Overall', v = NA, n_viremic_p = NA, n_pretreat_p = NA, n_treat_p = NA)
-
 
 
 # need to add chi2 p_values comparing all categories to the number of participants

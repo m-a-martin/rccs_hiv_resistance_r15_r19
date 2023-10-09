@@ -34,8 +34,8 @@ pretreat_dat = pretreat_dat %>%
 	left_join(
 		pretreat_weights %>% 
 			mutate(round = as.character(round)) %>%
-			select(study_id, round, w_gen), by=c("study_id", "round")) %>%
-	rename(w = w_gen)
+			select(study_id, round, w_all), by=c("study_id", "round")) %>%
+	rename(w = w_all)
 
 
 mut_dat = pretreat_muts %>% 

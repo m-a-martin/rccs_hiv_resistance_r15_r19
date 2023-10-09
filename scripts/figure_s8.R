@@ -21,11 +21,10 @@ hiv_dr_cat = hiv_dr_cat %>% left_join(hiv_mut %>% group_by(study_id, round) %>% 
 # now filter
 hiv_dr_cat = hiv_dr_cat %>%
 	filter(
-		valid_dr_dat &
+		!is.na(nnrti) & !is.na(nrti) & !is.na(pi) & !is.na(insti) &
 		pre_treatment &
 		finalhiv == 'P' & 
 		viremic)
-
 
 xmin = floor(log10(min(as.numeric((hiv_dr_cat %>% filter(!t97a & !is.na(copies)))$copies))))
 xmax = ceiling(log10(max(as.numeric((hiv_dr_cat %>% filter(!t97a & !is.na(copies)))$copies))))

@@ -4,7 +4,7 @@ source('scripts/utils.R')
 
 
 sort_cols = function(x, excl=c()){
-	round_order = c("gen" = 1, "nnrti" = 2, "nrti" = 3, "pi" = 4)
+	round_order = c("nnrti" = 1, "nrti" = 2, "pi" = 3, "all" = 4)
 	type_order = c("Coefficient (95% CI)" = 1, "p-value" = 3, "spacer"=4)
 	non_excl_x = x[!(x %in% excl)]
 	s1 = round_order[(str_split(non_excl_x, "_", simplify=T)[,1])]
@@ -16,7 +16,7 @@ sort_cols = function(x, excl=c()){
 
 
 all_col=list()
-for (i_class in c('gen', 'nnrti', 'nrti', 'pi')){
+for (i_class in c('all', 'nnrti', 'nrti', 'pi')){
 	o_class = read_tsv(paste(c('models/pretreat_', i_class, '_weights_raw.tsv'), collapse='')) %>%
 		mutate(RR = round(RR, 2),
 			LCI = round(LCI, 2),
@@ -49,7 +49,7 @@ all_col = bind_rows(all_col)
 all_col = all_col %>% 
 	pivot_longer(-c(Variable, class), names_to='name', values_to='var') %>%
 	pivot_wider(names_from=c('class', 'name'), values_from='var') %>%
-	mutate('gen_spacer' = '', 'nnrti_spacer' = '', 'nrti_spacer' = '')
+	mutate('pi_spacer' = '', 'nnrti_spacer' = '', 'nrti_spacer' = '')
 
 all_col = all_col %>% select(sort_cols(colnames(all_col), c('Variable')))
 

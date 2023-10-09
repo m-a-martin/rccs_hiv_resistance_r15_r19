@@ -21,7 +21,7 @@ hiv_dr_cat = hiv_dr_cat %>% left_join(hiv_mut %>% group_by(study_id, round) %>% 
 # now filter
 hiv_dr_cat = hiv_dr_cat %>%
 	filter(
-		dr_dat &
+		!is.na(nnrti) & !is.na(nrti) & !is.na(pi) & !is.na(insti) &
 		round > 14 &
 		pre_treatment &
 		viremic & 

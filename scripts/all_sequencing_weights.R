@@ -73,7 +73,7 @@ for (drug in c('nnrti', 'nrti', 'pi')){
 # now do one for all drugs
 temp_dat = dat %>% 
 	mutate(round = as.character(round)) %>%
-	mutate(d = nnrti_dat & nrti_dat & pi_dat)
+	mutate(d = !is.na(nnrti) & !is.na(nrti) & !is.na(pi) & !is.na(insti))
 
 # include all interaction terms so this is essentially a per-round model
 m = glm(d ~ round*missing_vl + round*log10vl + round*comm_type + round*age_cat + round*sex, 

@@ -1,7 +1,6 @@
 library(tidyverse)
 source('scripts/utils.R')
 
-
 table_s2 = bind_rows(
 	as_tibble(cbind(nnrti_drugs, nnrti_cols)) %>% 
 		rename(

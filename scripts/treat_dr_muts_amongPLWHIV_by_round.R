@@ -33,8 +33,8 @@ treat_weights = read_tsv(w_file)
 treat_dat = treat_dat %>% left_join(
 	treat_weights %>% 
 		mutate(round = as.character(round)) %>%
-		select(study_id, round, w_gen), by=c("study_id", "round")) %>%
-	rename(w = w_gen)
+		select(study_id, round, w_all), by=c("study_id", "round")) %>%
+	rename(w = w_all)
 
 all_rr = list()
 all_pred = list()

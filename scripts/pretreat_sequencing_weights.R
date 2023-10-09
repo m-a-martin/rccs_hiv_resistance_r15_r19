@@ -27,36 +27,35 @@ pretreat_dat = hiv_dr_cat %>%
 # for each round for each drunk get sampling model
 all_weights = list()
 # first just general sampling model 
-temp_dat = pretreat_dat %>% 
-			mutate(round = as.character(round)) %>%
-			mutate(d = valid_dr_dat)
+#temp_dat = pretreat_dat %>% 
+#			mutate(round = as.character(round)) %>%
+#			mutate(d = valid_dr_dat)
 # include all interaction terms so this is essentially a per-round model
-m = glm(d ~ round*missing_vl + round*log10vl + round*comm_type + round*age_cat + round*sex, 
-	data = temp_dat, 
-	family=poisson(link="log"))
+#m = glm(d ~ round*missing_vl + round*log10vl + round*comm_type + round*age_cat + round*sex, 
+#	data = temp_dat, 
+#	family=poisson(link="log"))
 # don't actually use the CI for anything but good to see our predictors are significant
-r = coeftest(m, vcov=sandwich)
+#r = coeftest(m, vcov=sandwich)
 # create output files
-o <- cbind(exp(cbind(RR = r[,1], 
-	       LCI = r[,1] + qnorm(0.05/2)*r[,2],
-	       UCI = r[,1] - qnorm(0.05/2)*r[,2])),
-	       P = r[,4])
-write.table(o, 
-	paste(c('models/pretreat_gen_weights_raw.tsv'), collapse=''), 
-	sep='\t', col.names=NA)
-saveRDS(m, paste(c('models/pretreat_gen_weights.rds'), collapse=''))
+#o <- cbind(exp(cbind(RR = r[,1], 
+#	       LCI = r[,1] + qnorm(0.05/2)*r[,2],
+#	       UCI = r[,1] - qnorm(0.05/2)*r[,2])),
+#	       P = r[,4])
+#write.table(o, 
+#	paste(c('models/pretreat_gen_weights_raw.tsv'), collapse=''), 
+#	sep='\t', col.names=NA)
+#saveRDS(m, paste(c('models/pretreat_gen_weights.rds'), collapse=''))
 # now predict probability of sequencing success
 # among those which were sequenced
-p = predict(m, temp_dat, type='response')
-temp_weight_dat = 
-	temp_dat %>% select(study_id, round, d) %>% 
-		mutate(drug = 'gen', p = p) %>% 
-		group_by(round) %>%
-		mutate(x = n()) %>%
-		filter(d == 1) %>%
-		mutate(w = x * p / sum(p))
-all_weights[['gen']] = temp_weight_dat
-
+#p = predict(m, temp_dat, type='response')
+#temp_weight_dat = 
+#	temp_dat %>% select(study_id, round, d) %>% 
+#		mutate(drug = 'gen', p = p) %>% 
+#		group_by(round) %>%
+#		mutate(x = n()) %>%
+#		filter(d == 1) %>%
+#		mutate(w = x * p / sum(p))
+#all_weights[['gen']] = temp_weight_dat
 
 for (drug in c('nnrti', 'nrti', 'pi')){
 		# temporary dataset renaming outcome variable
@@ -93,6 +92,38 @@ for (drug in c('nnrti', 'nrti', 'pi')){
 				mutate(w = x * p / sum(p))
 		all_weights[[drug]] = temp_weight_dat
 }
+
+# weights for sequences with data for all drugs
+temp_dat = pretreat_dat %>% 
+			mutate(round = as.character(round)) %>%
+			mutate(d = !is.na(nnrti) & !is.na(pi) & !is.na(insti) & !is.na(nrti))
+# include all interaction terms so this is essentially a per-round model
+m = glm(d ~ round*missing_vl + round*log10vl + round*comm_type + round*age_cat + round*sex, 
+	data = temp_dat, 
+	family=poisson(link="log"))
+# don't actually use the CI for anything but good to see our predictors are significant
+r = coeftest(m, vcov=sandwich)
+# create output files
+o <- cbind(exp(cbind(RR = r[,1], 
+	       LCI = r[,1] + qnorm(0.05/2)*r[,2],
+	       UCI = r[,1] - qnorm(0.05/2)*r[,2])),
+	       P = r[,4])
+write.table(o, 
+	paste(c('models/pretreat_all_weights_raw.tsv'), collapse=''), 
+	sep='\t', col.names=NA)
+saveRDS(m, paste(c('models/pretreat_all_weights.rds'), collapse=''))
+# now predict probability of sequencing success
+# among those which were sequenced
+p = predict(m, temp_dat, type='response')
+temp_weight_dat = 
+	temp_dat %>% select(study_id, round, d) %>% 
+		mutate(drug = 'all', p = p) %>% 
+		group_by(round) %>%
+		mutate(x = n()) %>%
+		filter(d == 1) %>%
+		mutate(w = x * p / sum(p))
+all_weights[['all']] = temp_weight_dat
+
 
 # format weights
 all_weights = bind_rows(all_weights)
