@@ -94,6 +94,8 @@ Rscript scripts/all_multi_dr_amongPLWHIV.R
 mkdir -p models/mutations
 # prevalence of substitutions among pre-treatment individuals 
 Rscript scripts/pretreat_dr_muts_amongPLWHIV_by_round.R
+# k103 stratified by sex
+Rscript scripts/pretreat_k103n_amongPLWHIV_by_round_sex.R
 # prevalence of substitutions among treatment-experienced individuals
 Rscript scripts/treat_dr_muts_amongPLWHIV_by_round.R
 # just T97A
@@ -156,7 +158,7 @@ Rscript scripts/table_s29.R
 Rscript scripts/table_s30.R
 Rscript scripts/table_s31.R
 Rscript scripts/table_s32.R
-Rscript scripts/table_s32.R
+Rscript scripts/table_s33.R
 
 # copy over figures and tables with individual level community data
 cp ../tables/table_s28.tsv ./tables/table_s28.tsv
