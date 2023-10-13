@@ -1,71 +1,175 @@
 library(tidyverse)
+
 source('scripts/utils.R')
 
 
-sort_cols = function(x){
-	class_order = c("nnrti" = 1, "nrti" = 2, "pi" = 3)
-	type_order = c("Prev. % (95% CI)" = 1, "Prev. ratio (95% CI)" = 2, "p-value" = 3, "spacer" = 10)
-	non_round_x = x[x!= "round"]
-	s1 = class_order[str_split(non_round_x, "_", simplify=T)[,1]]
-	s2 = type_order[str_split(non_round_x, "_", simplify=T)[,2]]
-	scores = tibble(val = non_round_x, s1 = s1, s2 = s2) %>%
-		arrange(s1, s2)
-	return(c("round", scores$val))
+
+format_col = function(x1, x2){
+		return(paste(paste(paste(x1, " (", sep=''),
+			round((x1 / x2)*100, 2), sep=''),
+			'%)', sep=''))
 }
 
 
-#### PRE-TREATMENT RESISTANCE BY ROUND AMONG PLWHIV ####
+chisq_p = function(x, a, b){
+	return(chisq.test(rbind(na.omit(x[[a]]), na.omit(x[[b]])))$p.value)
+}
+
+
+
+
 
 dat_file = 'data/rakai_drug_resistance_categorized.tsv'
-table_vars = c("age_cat", "comm_type", "sex")
+table_vars = c("age_cat", "comm_type", "sex", "vl_cat")
+
+# read in data and filter out bad rounds and age categories
+hiv_dr_cat = read_tsv(dat_file) %>% 
+	filter(
+		age_cat != '(50, 100]' & 
+		round > 14)
 
 
+# viremic hiv+ participants
+v_par = list()
+v_par[['round']] = hiv_dr_cat %>%
+		filter(finalhiv == 'P' & viremic) %>%
+		rename(v = round) %>%
+		mutate(v = as.character(v)) %>%
+		group_by(v) %>%
+		summarise(
+			n_viremic_participants = n(), 
+			n_viremic_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti) & !is.na(insti)), 
+			.group='drop') %>%
+		mutate(var = 'Survey round') %>%
+		select(var, v, n_viremic_participants, n_viremic_sequenced)
 
-pretreat_dr_pred_file = 'models/pretreat_amongPar_prev_pred.tsv'
-pretreat_dr_rr_file = 'models/pretreat_amongPar_rr.tsv'
+for (i_var in table_vars){
+	v_par[[i_var]] = hiv_dr_cat %>%
+		filter(finalhiv == 'P' & viremic) %>%
+		rename(v = !!i_var) %>%
+		group_by(v) %>%
+		summarise(
+			n_viremic_participants=n(), 
+			n_viremic_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti) & !is.na(insti)),
+			.groups='drop') %>%
+		mutate('var' = str_to_sentence(var_rename[i_var])) %>%
+		select(var, v, n_viremic_participants, n_viremic_sequenced)
+}
+v_par = bind_rows(v_par)
 
-pretreat_dr_pred = read_tsv(pretreat_dr_pred_file)
-# format for table
-pretreat_dr_pred = pretreat_dr_pred %>%
-	select(-se.fit) %>%
-	mutate(across(fit:upr, ~format_digit(.x*100))) %>%
-	unite("val", fit:lwr, sep=' (') %>%
-	unite("val", val:upr, sep=', ') %>%
+# pre-treatment hiv+ participants
+p_par = list()
+p_par[['round']] = hiv_dr_cat %>%
+		filter(finalhiv == 'P' & viremic & pre_treatment) %>%
+		rename(v = round) %>%
+		mutate(v = as.character(v)) %>%
+		group_by(v) %>%
+		summarise(
+			n_pretreat_participants = n(), 
+			n_pretreat_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti) & !is.na(insti)),
+			.group='drop') %>%
+		mutate(var = 'Survey round') %>%
+		select(var, v, n_pretreat_participants, n_pretreat_sequenced)
+for (i_var in table_vars){
+	p_par[[i_var]] = hiv_dr_cat %>%
+		filter(finalhiv == 'P' & viremic & pre_treatment) %>%
+		rename(v = !!i_var) %>%
+		group_by(v) %>%
+		summarise(n_pretreat_participants=n(), 
+			n_pretreat_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti) & !is.na(insti)),
+			.groups='drop') %>%
+		mutate('var' = str_to_sentence(var_rename[i_var])) %>%
+		select(var, v, n_pretreat_participants, n_pretreat_sequenced)
+}
+p_par = bind_rows(p_par)
+
+
+# treatment hiv+ participants
+t_par = list()
+t_par[['round']] = hiv_dr_cat %>%
+		filter(finalhiv == 'P' & viremic & !pre_treatment) %>%
+		rename(v = round) %>%
+		mutate(v = as.character(v)) %>%
+		group_by(v) %>%
+		summarise(
+			n_treat_participants = n(), 
+			n_treat_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti) & !is.na(insti)),
+			.group='drop') %>%
+		mutate(var = 'Survey round') %>%
+		select(var, v, n_treat_participants, n_treat_sequenced)
+
+
+for (i_var in table_vars){
+	t_par[[i_var]] = hiv_dr_cat %>%
+		filter(finalhiv == 'P' & viremic & !pre_treatment) %>%
+		rename(v = !!i_var) %>%
+		group_by(v) %>%
+		summarise(n_treat_participants=n(), 
+			n_treat_sequenced = sum(!is.na(pi) & !is.na(nrti) & !is.na(nnrti) & !is.na(insti)),
+			.groups='drop') %>%
+		mutate('var' = str_to_sentence(var_rename[i_var])) %>%
+		select(var, v, n_treat_participants, n_treat_sequenced)
+}
+t_par = bind_rows(t_par)
+
+
+# now column bind all of these
+table = v_par %>% 
+	inner_join(p_par,by=c("var", "v")) %>%
+	left_join(t_par, by=c("var", "v")) %>%
+	arrange(var, v) 
+
+# get overall data for each round
+oa = hiv_dr_cat %>% 
+	summarize(
+		n_viremic_participants = sum(viremic & (!is.na(finalhiv) & finalhiv == 'P')),
+		n_viremic_sequenced = sum(viremic & (!is.na(finalhiv) & finalhiv == 'P') & 
+			(!is.na(insti) & !is.na(pi) & !is.na(nrti) & !is.na(nnrti))),
+		n_pretreat_participants = sum(pre_treatment & viremic & (!is.na(finalhiv) & finalhiv == 'P')),
+		n_pretreat_sequenced = sum(pre_treatment & viremic & (!is.na(finalhiv) & finalhiv == 'P') & 
+			(!is.na(insti) & !is.na(pi) & !is.na(nrti) & !is.na(nnrti))),
+		n_treat_participants = sum(!pre_treatment & viremic & (!is.na(finalhiv) & finalhiv == 'P')),
+		n_treat_sequenced = sum(!pre_treatment & viremic & (!is.na(finalhiv) & finalhiv == 'P')  & 
+			!is.na(insti) & !is.na(pi) & !is.na(nrti) & !is.na(nnrti))) %>%
+	mutate(var = 'Overall', v = NA, n_viremic_p = NA, n_pretreat_p = NA, n_treat_p = NA)
+
+
+# need to add chi2 p_values comparing all categories to the number of participants
+table  = bind_rows(
+	table, 
+	bind_rows(table %>% group_by(var) %>% group_map(~
+		tibble(
+			var = .y[[1]],
+			v = NA,
+			n_viremic_participants = NA,
+			n_viremic_p = chisq.test(rbind(.$n_viremic_participants, .$n_viremic_sequenced))$p.value,
+			n_preatreat_participants = NA,
+			n_pretreat_p = chisq.test(rbind(.$n_pretreat_participants, .$n_pretreat_sequenced))$p.value,
+			n_treat_participants = NA,
+			n_treat_p = chisq.test(rbind(na.omit(.$n_treat_participants), na.omit(.$n_treat_sequenced)))$p.value))),
+	oa) %>%
+	arrange(!(var == "Overall"), !is.na(var), var, !is.na(v), v) %>%
+	select(var, v, n_viremic_participants, n_viremic_sequenced, n_viremic_p, 
+		n_pretreat_participants, n_pretreat_sequenced, n_pretreat_p, n_treat_participants, n_treat_sequenced, n_treat_p)
+
+# format columns
+table = table %>% 
 	mutate(
-		val = paste(val, ')', sep=''),
-		type = paste(class, "Prev. % (95% CI)", sep='_')) %>%
-	select(-class)
-
-pretreat_dr_rr = read_tsv(pretreat_dr_rr_file) %>%
-	mutate(across(RR:UCI, ~format_digit(.x))) %>%
-	unite("val", RR:LCI, sep=' (') %>%
-	unite("val", val: UCI, sep=', ') %>%
-	mutate(
-		val = paste(val, ')', sep=''),
-		val = if_else(`var` == "(Intercept)", 'ref', val),
-		P = if_else(P < 1E-4, "<0.0001", as.character(signif(P,2))),
-		P = if_else(`var` == "(Intercept)", 'ref', P),
-		`var` = as.numeric(str_split(`var`, 'round', simplify=T)[,2]),
-		`var` = if_else(is.na(`var`), 
-			min(`var`, na.rm=TRUE)-1,
-			`var`),
-		type = paste(class, "Prev. ratio (95% CI)", sep='_')) %>%
-	rename(c("round"='var')) %>%
-	select(-class)
-
-pretreat_dr_rr = 
-	bind_rows(
-		pretreat_dr_rr %>% select(-P),
-	pretreat_dr_rr %>% select(-val) %>% rename(c("val" = "P")) %>%
-		mutate(type = paste(str_split(type, "_", simplify=T)[,1], "p-value", sep='_')))
+		n_viremic_sequenced = 
+			if_else(!is.na(n_viremic_sequenced), format_col(n_viremic_sequenced, n_viremic_participants), NA),
+		n_pretreat_sequenced = 
+			if_else(!is.na(n_pretreat_sequenced), format_col(n_pretreat_sequenced, n_pretreat_participants), NA),
+		n_treat_sequenced = 
+			if_else(!is.na(n_treat_sequenced), format_col(n_treat_sequenced, n_treat_participants), NA)) %>%
+	mutate_at(vars(n_viremic_p, n_pretreat_p, n_treat_p), ~if_else(!is.na(.), if_else(. < 1E-4, "<1e-4", as.character(signif(., 2))), NA)) %>%
+	mutate_all(~if_else(is.na(.), "", as.character(.))) %>%
+	mutate(viremic_spacer = '', pretreat_spacer = '') %>%
+	select(var, v, n_viremic_participants, n_viremic_sequenced, n_viremic_p, viremic_spacer, 
+		n_pretreat_participants, n_pretreat_sequenced, n_pretreat_p, pretreat_spacer, 
+		n_treat_participants, n_treat_sequenced, n_treat_p)
 
 
-ts = bind_rows(pretreat_dr_pred, pretreat_dr_rr)
 
-ts = ts %>% pivot_wider(names_from=type, values_from=val) %>% mutate(
-	'nnrti_spacer' = '', 'nrti_spacer' = '', 'pi_spacer' = '')
-# sort
-ts = ts %>% select(sort_cols(colnames(ts))) %>%
-	arrange(round)
 
-write_tsv(ts, 'tables/table_s20.tsv')
+
+write_tsv(table, 'tables/table_s20.tsv')

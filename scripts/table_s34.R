@@ -2,15 +2,15 @@ library(tidyverse)
 source('scripts/utils.R')
 
 
-sort_cols = function(x){
+sort_cols = function(x, excl=c()){
 	#round_order = c("nnrti" = 1, "nrti" = 2, "pi" = 3)
-	type_order = c("Prev. (95% CI)" = 1, "Prev. ratio (95% CI)" = 2, "p-value" = 3, "spacer" = 4)
-	non_round_x = x[x!= "s_var" & x != 's']
-	s1 = as.numeric(str_split(non_round_x, "_", simplify=T)[,1])
-	s2 = type_order[str_split(non_round_x, "_", simplify=T)[,2]]
-	scores = tibble(val = non_round_x, s1 = s1, s2 = s2) %>%
+	type_order = c("Prev. (95% CI)" = 1, "Prev. ratio (95% CI)" = 2, "p-value" = 3, "spacer"=4)
+	non_excl_x = x[!(x %in% excl)]
+	s1 = as.numeric(str_split(non_excl_x, "_", simplify=T)[,1])
+	s2 = type_order[str_split(non_excl_x, "_", simplify=T)[,2]]
+	scores = tibble(val = non_excl_x, s1 = s1, s2 = s2) %>%
 		arrange(s1, s2)
-	return(c("s", "s_var", scores$val))
+	return(c(excl, scores$val))
 }
 
 
@@ -18,14 +18,12 @@ sort_cols = function(x){
 #### PRE-TREATMENT RESISTANCE BY ROUND AMONG PLWHIV ####
 
 
-pretreat_dr_pred_file = 
-'models/pretreat_amongPLWHIV_prev_pred_stratified.tsv'
-pretreat_dr_rr_file = 'models/pretreat_amongPLWHIV_rr_stratified.tsv'
+pretreat_dr_muts_prev_file = 'models/pretreat_int97a_amongPLWHIV_prev_pred.tsv'
+pretreat_dr_muts_rr_file =  'models/pretreat_int97a_amongPLWHIV_rr.tsv'
 
 # format for table
-pretreat_dr_pred = read_tsv(pretreat_dr_pred_file) %>%
-	filter(s != 'subtype' & class == 'nnrti') %>%
-	select(-se.fit, -class) %>%
+pretreat_dr_pred = read_tsv(pretreat_dr_muts_prev_file) %>%
+	select(-se.fit) %>%
 	mutate(fit = round(fit*100, 2), 
 		lwr = round(lwr*100, 2), upr = round(upr*100, 2)) %>%
 	unite("val", fit:lwr, sep=' (') %>%
@@ -36,14 +34,12 @@ pretreat_dr_pred = read_tsv(pretreat_dr_pred_file) %>%
 
 
 # todo infer this somehow?
-ref_cat = c('sex'='F', 'age_cat'='(14,24]', 'comm_type' = 'Agrarian')
+ref_cat = c('sex'='F', 'age_cat'='(14,24]', 'comm_type' = 'Agrarian', 'subtype' = "A1")
 
-pretreat_dr_rr = read_tsv(pretreat_dr_rr_file) %>%
-	filter(s != 'subtype' & class == 'nnrti') %>%
-	select(-class) %>%
-	mutate(RR = round(RR, 2),
-		LCI = round(LCI, 2),
-		UCI = round(UCI, 2)) %>%
+pretreat_dr_rr = read_tsv(pretreat_dr_muts_rr_file) %>%
+	mutate(RR = round(RR, 3),
+		LCI = round(LCI, 3),
+		UCI = round(UCI, 3)) %>%
 	unite("val", RR:LCI, sep=' (') %>%
 	unite("val", val: UCI, sep=', ') %>%
 	mutate(
@@ -70,17 +66,23 @@ pretreat_dr_rr =
 
 
 
-ts = bind_rows(pretreat_dr_pred, pretreat_dr_rr)
+ts11 = bind_rows(pretreat_dr_pred, pretreat_dr_rr)
+ts11 = ts11 %>% select(-round) %>% pivot_wider(names_from="type", values_from="val")
 
-ts = ts %>% select(-round) %>% pivot_wider(names_from="type", values_from="val") %>%
-	mutate(`15_spacer` = '', `16_spacer` = '', `17_spacer` = '', `18_spacer` = '')
+# blank cols
+for (r in unique(read_tsv(pretreat_dr_muts_prev_file)$round)){
+	ts11[paste(r, "_spacer", sep='')] = NA
+}
 
-ts = ts %>%
-	select(sort_cols(colnames(ts)))
+ts11 = ts11 %>%
+	select(sort_cols(colnames(ts11), c('s', 's_var')))
 
-ts = bind_rows(ts, tibble(s = unique(ts$s))) %>% 
+
+#blank rows
+ts11 = bind_rows(
+	ts11, 
+	 tibble(s = unique(ts11$s))) %>%
 	arrange(s, !is.na(s_var), s_var)
 
-write_tsv(ts, 'tables/table_s24.tsv', na='')
 
-
+write_tsv(ts11, 'tables/table_s34.tsv', na='')

@@ -4,11 +4,6 @@ source('scripts/utils.R')
 
 
 
-format_col = function(x1, x2){
-		return(paste(paste(paste(x1, " (", sep=''),
-			round((x1 / x2)*100, 2), sep=''),
-			'%)', sep=''))
-}
 
 
 chisq_p = function(x, a, b){

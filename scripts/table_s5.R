@@ -4,7 +4,7 @@ source('scripts/utils.R')
 
 
 sort_cols = function(x, excl=c()){
-	round_order = c("nnrti" = 1, "nrti" = 2, "pi" = 3, "all" = 4)
+	round_order = c("nnrti" = 1, "nrti" = 2, "pi" = 3, "NNRTI-NRTI-PI" = 4)
 	type_order = c("Coefficient (95% CI)" = 1, "p-value" = 3, "spacer"=4)
 	non_excl_x = x[!(x %in% excl)]
 	s1 = round_order[(str_split(non_excl_x, "_", simplify=T)[,1])]
@@ -31,7 +31,7 @@ row_headers = tibble(var_type = names(ref_cat), Variable = names(ref_cat),
 ref_table = bind_rows(row_headers, ref_table)
 
 all_col=list()
-for (i_class in c('nnrti', 'nrti', 'pi', "all")){
+for (i_class in c('nnrti', 'nrti', 'pi', 'NNRTI-NRTI-PI')){
 	o_class = read_tsv(paste(c('models/all_', i_class, '_weights_raw.tsv'), collapse=''), show_col_types = FALSE) %>%
 		mutate(RR = round(RR, 2),
 			LCI = round(LCI, 2),
@@ -80,6 +80,7 @@ all_col = all_col %>%
 	mutate('nnrti_spacer' = '', 'nrti_spacer' = '', 'pi_spacer' = '')
 
 all_col = all_col %>% select(sort_cols(colnames(all_col), c('Variable')))
+print(names(all_col))
 
 all_col = all_col %>% arrange(!is.na(nnrti_var_type), 
 	!(nnrti_var_type == 'Survey round'), 
@@ -89,6 +90,7 @@ all_col = all_col %>% arrange(!is.na(nnrti_var_type),
 
 # finally, drop unnecessary rows
 all_col = all_col %>% select(names(all_col)[!str_detect(names(all_col), 'var_type')])
+print(names(all_col))
 
 
 write_tsv(all_col, 'tables/table_s5.tsv')

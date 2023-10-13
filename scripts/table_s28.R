@@ -15,30 +15,26 @@ sort_cols = function(x){
 		return(c("comm_num", scores$val))
 	}
 
-dat_file = 'data/rakai_drug_resistance_categorized.tsv'
-comm_num_prev_file = 'models/all_amongPar_comm_num_R18_prev_pred.tsv'
-comm_num_v_prev_file = 'models/HIV_comm_num_viremic_prev_pred.tsv'
+comm_type_prev_file = 'models/all_amongPar_prev_pred_stratified.tsv'
+comm_type_v_prev_file = 'models/HIV_viremic_prev_pred_stratified.tsv'
 class_prev_pred_file = 'models/all_amongPLWHIV_prev_pred_link.tsv'
 
 
-comm_num_type = read_tsv(dat_file) %>% select(comm_type, comm_num) %>% unique() %>% 
-	mutate(comm_num = as.character(comm_num))
-
-comm_num_prev = read_tsv(comm_num_prev_file) %>% filter(round == 18) %>% 
-	mutate(comm_num = as.character(comm_num)) %>%
+comm_type_prev = read_tsv(comm_type_prev_file) %>% filter(round == 18) %>%
+	mutate(comm_num = s_var) %>%
 	select(class, comm_num, fit, lwr, upr)
 
-
-comm_num_v_prev = read_tsv(comm_num_v_prev_file) %>% 
-	filter(round == 18) %>% 
-	mutate(comm_num = as.character(comm_num),
-	class = 'viremia') %>%
+comm_type_v_prev = read_tsv(comm_type_v_prev_file) %>% 
+	filter(round == 18) %>%
+	mutate(
+		comm_num = comm_type,
+		class = 'viremia') %>%
 	select(class, comm_num, fit, lwr, upr)
 
 
 class_prev = read_tsv(class_prev_pred_file) %>% filter(round == 18)
 
-ts11 = bind_rows(comm_num_prev, comm_num_v_prev)
+t4 = bind_rows(comm_type_prev, comm_type_v_prev)
 
 
 # set up class_prev_list
@@ -50,10 +46,10 @@ for (c in unique(class_prev$class)){
 }
 
 
-v_prev = (ts11 %>% filter(class == 'viremia'))
+v_prev = (t4 %>% filter(class == 'viremia'))
 for (c in unique(class_prev$class)){
-	ts11 = bind_rows(
-		ts11, 
+	t4 = bind_rows(
+		t4, 
 		tibble(
 			comm_num = v_prev$comm_num,
 			fit = v_prev$fit * exp(as.numeric(prev[[c]][["fit"]])),
@@ -64,7 +60,7 @@ for (c in unique(class_prev$class)){
 
 # merge fit lwr and upr
 # then pivot wider
-ts11 = ts11 %>% 
+t4 = t4 %>% 
 	mutate_at(vars(fit, lwr, upr), ~round(.x*100, 2)) %>%
 	unite("val", fit:lwr, sep=' (') %>%
 	unite("val", val:upr, sep=', ') %>%
@@ -74,20 +70,13 @@ ts11 = ts11 %>%
 
 # add spacer cols
 for (c in unique(class_prev$class)){
-	ts11[paste(c, "_spacer", sep='')] = NA
+	t4[paste(c, "_spacer", sep='')] = NA
 }
 
 # sort cols 
-ts11 = ts11 %>% 
-	select(sort_cols(colnames(ts11))) 
-
-# finally, add indicator of community type 
-ts11 = comm_num_type %>% 
-	right_join(ts11) %>%
-	mutate(
-		comm_type = if_else(is.na(comm_type), comm_num, comm_type)) %>% 
-	arrange(!(comm_num == 'all'), desc(viremia))
+t4 = t4 %>% 
+	select(sort_cols(colnames(t4))) 
 
 
 # and save
-write_tsv(ts11, 'tables/table_s28.tsv', na='')
+write_tsv(t4, 'tables/table_s28.tsv', na='')

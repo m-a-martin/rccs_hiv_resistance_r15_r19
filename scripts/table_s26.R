@@ -2,14 +2,9 @@ library(tidyverse)
 source('scripts/utils.R')
 
 
-d = read_tsv('models/all_multi_amongPLWHIV_prev_pred.tsv')
+pred_file = 'models/treat_amongPLWHIV_prev_pred.tsv'
+rr_file = 'models/treat_amongPLWHIV_rr.tsv'
 
-t = d %>% select(-se.fit) %>%
-	mutate(across(fit:upr, ~format_digit(.x*100))) %>%
-	unite("val", fit:lwr, sep=' (') %>%
-	unite("val", val:upr, sep=', ') %>%
-	mutate(
-		val = paste(val, ')', sep='')) %>%
-	rename(`Prev. % (95% CI)` = val)
+ts = class_round_prev_rr_table(pred_file, rr_file)
 
-write_tsv(t, 'tables/table_s26.tsv')
+write_tsv(ts, 'tables/table_s26.tsv', na='')
