@@ -1,0 +1,24 @@
+var	v	n_viremic_participants	n_viremic_sequenced	n_viremic_p	n_viremic_spacer	n_pt_viremic_participants	n_pt_viremic_sequenced	n_pt_viremic_p	n_pt_viremic_spacer	n_t_viremic_participants	n_t_viremic_sequenced	n_t_viremic_p	n_t_viremic_spacer
+Overall		5691	4523 (79.48%)			4915	4094 (83.3%)			776	429 (55.28%)		
+Age category				0.0190				0.0760				0.8200	
+Age category	(14,24]	1111	950 (85.51%)			997	884 (88.67%)			114	66 (57.89%)		
+Age category	(24,34]	2811	2235 (79.51%)			2453	2034 (82.92%)			358	201 (56.15%)		
+Age category	(34,49]	1769	1338 (75.64%)			1465	1176 (80.27%)			304	162 (53.29%)		
+Community type				0.5500				0.2600				0.0690	
+Community type	Agrarian	1621	1287 (79.4%)			1417	1190 (83.98%)			204	97 (47.55%)		
+Community type	Fishing	2860	2246 (78.53%)			2454	1998 (81.42%)			406	248 (61.08%)		
+Community type	Trading	1210	990 (81.82%)			1044	906 (86.78%)			166	84 (50.6%)		
+Sex				0.1400				0.0550				0.7700	
+Sex	F	3008	2440 (81.12%)			2564	2198 (85.73%)			444	242 (54.5%)		
+Sex	M	2683	2083 (77.64%)			2351	1896 (80.65%)			332	187 (56.33%)		
+ Survey round				0.0005				0.0005				0.0005	
+ Survey round	15	2020	1971 (97.57%)			1985	1969 (99.19%)			35	2 (5.71%)		
+ Survey round	16	1464	798 (54.51%)			1318	794 (60.24%)			146	4 (2.74%)		
+ Survey round	17	1026	948 (92.4%)			822	764 (92.94%)			204	184 (90.2%)		
+ Survey round	18	728	635 (87.23%)			502	445 (88.65%)			226	190 (84.07%)		
+ Survey round	19	453	171 (37.75%)			288	122 (42.36%)			165	49 (29.7%)		
+Viral load				0.0005				0.0005				0.7600	
+Viral load	(3,4]	2100	1647 (78.43%)			1747	1445 (82.71%)			353	202 (57.22%)		
+Viral load	(4,5]	2231	1696 (76.02%)			1898	1515 (79.82%)			333	181 (54.35%)		
+Viral load	(5,Inf]	598	428 (71.57%)			508	382 (75.2%)			90	46 (51.11%)		
+Viral load	missing	762	752 (98.69%)			762	752 (98.69%)						
